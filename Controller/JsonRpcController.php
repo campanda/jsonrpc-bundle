@@ -2,7 +2,6 @@
 
 namespace Wa72\JsonRpcBundle\Controller;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,11 +53,6 @@ class JsonRpcController extends Controller
     const INTERNAL_ERROR = -32603;
     
     /**
-     * @var ContainerInterface $container
-     */
-    private $container;
-    
-    /**
      * Functions that are allowed to be called
      *
      * @var array $functions
@@ -77,13 +71,12 @@ class JsonRpcController extends Controller
      * @param array $config Associative array for configuration, expects at least a key "functions"
      * @throws \InvalidArgumentException
      */
-    public function __construct(ContainerInterface $container, $config)
+    public function __construct($config)
     {
         if (isset($config['functions'])) {
             if (!is_array($config['functions'])) throw new \InvalidArgumentException('Configuration parameter "functions" must be array');
             $this->functions = $config['functions'];
         }
-        $this->container = $container;
     }
 
     /**

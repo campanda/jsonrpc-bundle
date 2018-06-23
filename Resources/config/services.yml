@@ -10,10 +10,10 @@ services:
         public: false       # Allows optimizing the container by removing unused services; this also means
                             # fetching services directly from the container via $container->get() won't work.
                             # The best practice is to be explicit about your dependencies anyway.
+
     wa72_jsonrpc.jsonrpccontroller:
         public: true
         bind:
           $config: '%wa72.jsonrpc%'
         class: '%wa72_jsonrpc.jsonrpccontroller.class%'
-        arguments: ['@service_container', '%wa72.jsonrpc%']
         tags: ['controller.service_arguments']
