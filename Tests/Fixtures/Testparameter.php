@@ -1,5 +1,5 @@
 <?php
-    
+
 namespace Wa72\JsonRpcBundle\Tests\Fixtures;
 
 class Testparameter {
