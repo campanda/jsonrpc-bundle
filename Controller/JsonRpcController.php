@@ -2,11 +2,13 @@
 
 namespace Wa72\JsonRpcBundle\Controller;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\Serializer\SerializerInterface;
+
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 /**
  * Controller for executing JSON-RPC 2.0 requests
@@ -40,18 +42,22 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
  *
  * @license MIT
  * @author Christoph Singer
+ * @author Helmut Hoffer von Ankershoffen
  *
  */
-class JsonRpcController implements ContainerAwareInterface
+class JsonRpcController extends Controller
 {
-    use ContainerAwareTrait;
-    
     const PARSE_ERROR = -32700;
     const INVALID_REQUEST = -32600;
     const METHOD_NOT_FOUND = -32601;
     const INVALID_PARAMS = -32602;
     const INTERNAL_ERROR = -32603;
-
+    
+    /**
+     * @var ContainerInterface $container
+     */
+    private $container;
+    
     /**
      * Functions that are allowed to be called
      *
@@ -67,29 +73,24 @@ class JsonRpcController implements ContainerAwareInterface
     private $services = array();
 
     /**
-     * @var \JMS\Serializer\SerializationContext
-     */
-    private $serializationContext;
-
-    /**
      * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
      * @param array $config Associative array for configuration, expects at least a key "functions"
      * @throws \InvalidArgumentException
      */
-    public function __construct($container, $config)
+    public function __construct(ContainerInterface $container, $config)
     {
         if (isset($config['functions'])) {
             if (!is_array($config['functions'])) throw new \InvalidArgumentException('Configuration parameter "functions" must be array');
             $this->functions = $config['functions'];
         }
-        $this->setContainer($container);
+        $this->container = $container;
     }
 
     /**
      * @param Request $httprequest
      * @return Response
      */
-    public function execute(Request $httprequest)
+    public function execute(Request $httprequest, SerializerInterface $serializer)
     {
         $json = $httprequest->getContent();
         $request = json_decode($json, true);
@@ -160,7 +161,7 @@ class JsonRpcController implements ContainerAwareInterface
                 if (is_array($param) && !$rps[$index]->isArray() && $rps[$index]->getClass() != null) {
                     $class = $rps[$index]->getClass()->getName();
                     $param = json_encode($param);
-                    $params[$index] = $this->container->get('jms_serializer')->deserialize($param, $class, 'json');
+                    $params[$index] = $serializer->deserialize($param, $class, 'json');
                 }
             }
 
@@ -174,17 +175,13 @@ class JsonRpcController implements ContainerAwareInterface
             $response['result'] = $result;
             $response['id'] = $requestId;
 
-            if ($this->container->has('jms_serializer')) {
-                $functionConfig = (
-                    isset($this->functions[$request['method']])
-                        ? $this->functions[$request['method']]
-                        : array()
-                );
-                $serializationContext = $this->getSerializationContext($functionConfig);
-                $response = $this->container->get('jms_serializer')->serialize($response, 'json', $serializationContext);
-            } else {
-                $response = json_encode($response);
-            }
+            $functionConfig = (
+                isset($this->functions[$request['method']])
+                    ? $this->functions[$request['method']]
+                    : array()
+            );
+            $serializationContext = $this->getSerializationContext($functionConfig);
+            $response = $serializer->serialize($response, 'json', $serializationContext);
 
             return new Response($response, 200, array('Content-Type' => 'application/json'));
         } else {
@@ -235,6 +232,8 @@ class JsonRpcController implements ContainerAwareInterface
         }
     }
 
+    // helpers
+
     protected function convertExceptionToErrorData(\Exception $e)
     {
         return $e->getMessage();
@@ -277,26 +276,19 @@ class JsonRpcController implements ContainerAwareInterface
 
         return new Response(json_encode($response), 200, array('Content-Type' => 'application/json'));
     }
+    
 
     /**
-     * Set SerializationContext for using with jms_serializer
-     *
-     * @param \JMS\Serializer\SerializationContext $context
-     */
-    public function setSerializationContext($context)
-    {
-        $this->serializationContext = $context;
-    }
-
-    /**
-     * Get SerializationContext or creates one if jms_serialization_context option is set
+     * Get SerializationContext given functionConfig
      *
      * @param array $functionConfig
-     * @return \JMS\Serializer\SerializationContext
      */
-    protected function getSerializationContext(array $functionConfig)
+    protected function getSerializationContext(array $functionConfig): array
     {
-        if (isset($functionConfig['jms_serialization_context'])) {
+        return [];
+        // TODO
+        
+        /*if (isset($functionConfig['jms_serialization_context'])) {
             $serializationContext = \JMS\Serializer\SerializationContext::create();
 
             if (isset($functionConfig['jms_serialization_context']['groups'])) {
@@ -314,7 +306,7 @@ class JsonRpcController implements ContainerAwareInterface
             $serializationContext = $this->serializationContext;
         }
 
-        return $serializationContext;
+        return $serializationContext;*/
     }
     
     /**

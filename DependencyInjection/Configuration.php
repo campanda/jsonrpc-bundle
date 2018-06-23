@@ -28,7 +28,7 @@ class Configuration implements ConfigurationInterface
                         ->children()
                             ->scalarNode('service')->end()
                             ->scalarNode('method')->end()
-                            ->arrayNode('jms_serialization_context')
+                            ->arrayNode('serialization_context')
                                 ->children()
                                     ->arrayNode('groups')
                                         ->beforeNormalization()

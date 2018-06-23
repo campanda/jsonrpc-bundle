@@ -4,6 +4,8 @@ namespace Wa72\JsonRpcBundle\Tests;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
+
 use Wa72\JsonRpcBundle\Controller\JsonRpcController;
 use Wa72\JsonRpcBundle\Tests\Fixtures\Testparameter;
 
@@ -183,8 +185,8 @@ class JsonRpcControllerTest extends \PHPUnit\Framework\TestCase {
 
     private function makeRequest($controller, $requestdata)
     {
-        /** @var \JMS\Serializer\Serializer $serializer */
-        $serializer = $this->kernel->getContainer()->get('jms_serializer');
+        /** @var SerializerInterface $serializer */
+        $serializer = $this->kernel->getContainer()->get('serializer');
         return json_decode($controller->execute(
             new Request(array(), array(), array(), array(), array(), array(), $serializer->serialize($requestdata, 'json'))
         )->getContent(), true);

@@ -1,3 +1,7 @@
+### fork ###
+-   true compatibility with Symfony 4 inc. flex, thanks to @helmuthva
+-   replace JMS Serializer with Sf Serializer
+
 ### v0.6.1 2018-03-10 ###
 -   compatibility with Symfony 4, thanks to @shreypuranik
 -   make unit tests compatible with newer phpunit versions

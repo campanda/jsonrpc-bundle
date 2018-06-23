@@ -56,8 +56,6 @@ The key of an entry of the "functions" array is the alias name for the method to
 In this example, "myfunction1" and "anotherfunction" are aliases for service methods that are used as JSON-RPC method names.
 A method name "myfunction1" in the JSON-RPC call will then call the method "methodofservice" of service "mybundle.servicename".
 
-If you use `jms\_serializer`_ you can also configure exclusion strategies (groups, version, or max depth checks) :
-
 .. code-block:: yaml
 
     # app/config/config.yml
@@ -66,9 +64,8 @@ If you use `jms\_serializer`_ you can also configure exclusion strategies (group
             myfunction1:
                 service: "mybundle.servicename"
                 method: "methodofservice"
-                jms_serialization_context:
+                serialization_context:
                     group: "my_group"
-                    version: "1"
                     max_depth_checks: true
 
 
@@ -91,6 +88,8 @@ For this to work, the following conditions must be met:
 - The method parameters must be correctly type hinted
 - The classes used as parameters must contain `jms\_serializer @Type annotations for their properties <http://jmsyst.com/libs/serializer/master/reference/annotations#type>`_
 
+
+**New in Fork**: Fixed dependencies to work with Symfony flex. Replaced JMS Serializer with Sf serializer.
 
 Testing
 =======

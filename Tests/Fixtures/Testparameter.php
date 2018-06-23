@@ -1,19 +1,21 @@
 <?php
+    
 namespace Wa72\JsonRpcBundle\Tests\Fixtures;
 
-use JMS\Serializer\Annotation\Type;
-
 class Testparameter {
+    
     /**
-     * @Type("string")
+     * @var string
      */
     private $a;
+
     /**
-     * @Type("string")
+     * @var string
      */
     protected $b;
+
     /**
-     * @Type("string")
+     * @var string
      */
     public $c;
 
